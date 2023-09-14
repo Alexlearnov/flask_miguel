@@ -1,17 +1,17 @@
 from flask import render_template, flash, redirect, url_for
 from app import app
 from app.forms import LoginForm
-from flask_login import current_user, login_user, logout_user
+from flask_login import current_user, login_user, logout_user, login_required
 from app.models import UsersView
 
+
 @app.route('/')
-@app.route('/index')
+@app.route('/index/')
 def index():
+    return render_template('index.html', title='Microblog')
 
-    return render_template('index.html', title='Home')
 
-
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("index"))
@@ -27,7 +27,13 @@ def login():
     return render_template('login.html', title='Sign In', form=form)
 
 
-@app.route('/log_out')
+@app.route('/log_out/')
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
+
+@login_required
+@app.route('/my_profile/')
+def my_profile():
+    return render_template("user_profile.html", title="Home")

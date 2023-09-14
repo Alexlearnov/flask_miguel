@@ -1,11 +1,7 @@
 <!doctype html>
 <html>
     <head>
-      {% if title %}
-      <title>{{ title }} - Microblog</title>
-      {% else %}
-      <title>Welcome to Microblog</title>
-      {% endif %}
+    {% block title %} {% endblock %}
     </head>
     <body>
 {% include "menu.html" %}
