@@ -1,9 +1,34 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms import SelectField, EmailField, StringField, PasswordField, BooleanField, SubmitField
+from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Length
+from .models import UsersView
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     remember_me = BooleanField('Remember Me')
     submit = SubmitField('Sign In')
+
+
+class UserRegistrationForm(FlaskForm):
+    first_name = StringField('First name', validators=[DataRequired()])
+    last_name = StringField('Last name', validators=[DataRequired()])
+    username = StringField('Username', validators=[DataRequired(), Length(min=4, max=32)])
+    email = EmailField('E-mail', validators=[Email(), DataRequired()])
+
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=32)])
+    password_2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
+
+    gender = SelectField('Gender', coerce=int, choices=[(0, 'male'), (1, 'female')], validators=[DataRequired()])
+
+    submit = SubmitField('Sign Up')
+
+    def validate_username(self, username):
+        user = UsersView.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('Please use a different username.')
+
+    def validate_email(self, email):
+        user = UsersView.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('Please use a different email address.')
