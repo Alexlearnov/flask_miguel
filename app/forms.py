@@ -19,7 +19,7 @@ class UserRegistrationForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=32)])
     password_2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
 
-    gender = SelectField('Gender', coerce=int, choices=[(0, 'male'), (1, 'female')], validators=[DataRequired()])
+    gender = SelectField('Gender', choices=['male', 'female'], validators=[DataRequired()])
 
     submit = SubmitField('Sign Up')
 
