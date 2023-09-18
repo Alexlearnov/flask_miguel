@@ -24,8 +24,10 @@ def login():
         flash(f'Login for user {form.username.data}, remember me {form.remember_me.data}')
         login_user(user, remember=form.remember_me.data)
         next_page = url_for('index')
-        if next_page and urlsplit(next_page).netloc == '':
+        if request.args.get('next') and urlsplit(next_page).netloc == '':
             next_page = request.args.get('next')
+            if next_page == '/my_profile/':
+                next_page = f"/my_profile/{user.username}"
         return redirect(next_page)
     return render_template('login.html', title='Sign In', form=form)
 
@@ -36,11 +38,18 @@ def logout():
     return redirect(url_for('index'))
 
 
-
 @app.route('/my_profile/')
+@app.route('/my_profile/<username>')
 @login_required
-def my_profile():
-    return render_template("user_profile.html", title="Home")
+def my_profile(username):
+    user = UsersView.query.filter_by(username=username).first_or_404()
+    posts = [
+        {'author': user, 'body': 'Test post # 1'},
+        {'author': user, 'body': 'Test post # 2'},
+    ]
+    return render_template("user_profile.html", user=user, posts=posts, title="Home")
+
+
 
 
 @app.route('/sign_up/', methods=['GET', 'POST'])
