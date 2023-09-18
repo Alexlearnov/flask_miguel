@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
-from app.forms import LoginForm, UserRegistrationForm
+from app.forms import LoginForm, UserRegistrationForm, EditProfileForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import UsersView
 from urllib.parse import urlsplit
@@ -50,6 +50,17 @@ def my_profile(username):
     ]
     return render_template("user_profile.html", user=user, posts=posts, title="Home")
 
+@app.route('/edit_profile/', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        current_user.about_me = form.about_me.data
+        db.session.commit()
+        flash('Your changes have been saved.')
+        return redirect(url_for('edit_profile'))
+    form.about_me.data = current_user.about_me
+    return render_template('edit_profile.html', title='Edit Profile', form=form)
 
 
 
