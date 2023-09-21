@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.forms import LoginForm, UserRegistrationForm, EditProfileForm
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import UsersView
+from app.models import UsersModel
 from urllib.parse import urlsplit
 from datetime import datetime
 
@@ -18,7 +18,7 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user: UsersView = UsersView.query.filter_by(username=form.username.data).first()
+        user: UsersModel = UsersModel.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash("Invalid username or password")
             return redirect(url_for("login"))
@@ -43,7 +43,7 @@ def logout():
 @app.route('/my_profile/<username>')
 @login_required
 def my_profile(username):
-    user = UsersView.query.filter_by(username=username).first_or_404()
+    user = UsersModel.query.filter_by(username=username).first_or_404()
     posts = [
         {'author': user, 'body': 'Test post # 1'},
         {'author': user, 'body': 'Test post # 2'},
@@ -71,7 +71,7 @@ def sign_up():
         return redirect(url_for('index'))
     form = UserRegistrationForm()
     if form.validate_on_submit():
-        user = UsersView(username=form.username.data,
+        user = UsersModel(username=form.username.data,
                          email=form.email.data,
                          first_name=form.first_name.data,
                          last_name=form.last_name.data,
