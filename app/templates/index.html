@@ -1,9 +1,20 @@
 {% extends "base.html" %}
-{% block title %} {{ title }} {% endblock %}
+{% block title %}  {% endblock %}
 {% block content %}
 
-    <h1>Welcome to Microblog!</h1>
+    <h1>Welcome to {{ title }}!</h1>
     {% for post in posts %}
-    <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
+        {% include "includes/_post.html" %}
     {% endfor %}
+
+    {% if form %}
+        <form action="" method="post">
+        {{ form.csrf_token() }}
+            {% for field in form if field.name != 'csrf_token' %}
+                <div><p>{{ field.label() }}</p></div>
+                    {{ field }}
+            {% endfor %}
+        </form>
+    {% endif %}
+
 {% endblock %}

@@ -1,15 +1,24 @@
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
-from app.forms import LoginForm, UserRegistrationForm, EditProfileForm, EmptyForm
+from app.forms import LoginForm, UserRegistrationForm, EditProfileForm, EmptyForm, PostForm
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import UsersModel
+from app.models import UsersModel, PostsModel
 from urllib.parse import urlsplit
 from datetime import datetime
 
-@app.route('/')
-@app.route('/index/')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index/', methods=['GET', 'POST'])
+@login_required
 def index():
-    return render_template('index.html', title='Microblog')
+    form = PostForm()
+    if form.validate_on_submit():
+        post: PostsModel = PostsModel(body=form.post.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post is now live!')
+
+        return redirect(url_for('index'))
+    return render_template('index.html', title='Microblog', form=form)
 
 
 @app.route('/login/', methods=['GET', 'POST'])
@@ -44,12 +53,10 @@ def logout():
 @login_required
 def my_profile(username):
     user = UsersModel.query.filter_by(username=username).first_or_404()
-    posts = [
-        {'author': user, 'body': 'Test post # 1'},
-        {'author': user, 'body': 'Test post # 2'},
-    ]
+    posts = PostsModel.query.filter_by(user_id=user.id).all()
     form = EmptyForm()
-    return render_template("user_profile.html", user=user, posts=posts, title="Home", form=form)
+    return render_template("user_profile.html", user=user, posts=posts, title="Home", form=form,
+                           )
 
 @app.route('/edit_profile/', methods=['GET', 'POST'])
 @login_required
@@ -131,3 +138,8 @@ def unfollow(username):
         return redirect(url_for('index'))
 
 
+@app.route('/explore/')
+@login_required
+def explore():
+    posts = PostsModel.query.order_by(PostsModel.timestamp.desc()).all()
+    return render_template('index.html', title='Explore', posts=posts)
